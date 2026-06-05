@@ -5,6 +5,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,29 +20,35 @@ import org.springframework.stereotype.Component;
 @Component
 public class TempFileCleaner {
 
-	@Scheduled(fixedRate = 1800000)//30分おきに実行する
+    @Autowired
+    private ServletContext servletContext;
+
+    @Scheduled(fixedRate = 1800000)
     public void deleteOldTempFiles() {
 
-        Path tempFile = Paths.get("C:\\kenshuProject\\WebContent\\upload\\temp");//監視先のパス
+        String tempPath =
+            servletContext.getRealPath("/upload/temp");
 
-        try (Stream<Path> files = Files.list(tempFile)) {//中のファイルを取得
+        Path tempFile = Paths.get(tempPath);
 
-            files.forEach(path -> {//ファイル全てに対して実行
+        try (Stream<Path> files = Files.list(tempFile)) {
+
+            files.forEach(path -> {
 
                 try {
 
                     FileTime lastModified =
-                        Files.getLastModifiedTime(path);//更新時間を取得
+                        Files.getLastModifiedTime(path);
 
                     long diff =
                         System.currentTimeMillis()
-                        - lastModified.toMillis();//現在時間から更新時間を引く
+                        - lastModified.toMillis();
 
-                    if (diff > 30 * 60 * 1000) {//30分差の場合
+                    if (diff > 30 * 60 * 1000) {
 
-                        Files.deleteIfExists(path);//ファイルを削除
+                        Files.deleteIfExists(path);
 
-                        System.out.println("削除:" + path);//ログに記載
+                        System.out.println("削除:" + path);
 
                     }
 

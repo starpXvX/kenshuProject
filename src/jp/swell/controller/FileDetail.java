@@ -386,7 +386,7 @@ public class FileDetail extends ControllerBase {
         String senderUserId = sourceUserInfoIds.length > 0 ? sourceUserInfoIds[0] : null; // 最初のユーザーを送信元として選択
 
 //        String filePath = "C:/git/training/kenshuProject/WebContent/upload";
-        String filePath = "C:\\kenshuProject\\WebContent\\upload";//保存先フォルダのパス設定
+        String filePath = getServletContext().getRealPath("/upload");//保存先フォルダのパス設定
        
         String skey = GetNumber.getRandomNo(16); //file_key生成
 
@@ -402,10 +402,12 @@ public class FileDetail extends ControllerBase {
             systemFileName += fileExtension;
         }
 
-        Path path = Paths.get("C:\\kenshuProject\\WebContent\\upload\\temp\\" + systemFileName);
-        byte[] fileData = Files.readAllBytes(path);
+        String tempPath = getServletContext().getRealPath("/upload/temp").replace("\\", "/");
         // 完全なファイルパスの生成
-        String fullPath = filePath + "/" + systemFileName;
+        String tempfullPath = tempPath + "/" + systemFileName;
+        String fullPath= filePath + "/" + systemFileName;
+        Path path = Paths.get(tempfullPath);
+        byte[] fileData = Files.readAllBytes(path);
         if (!fileUtil.outputFile(fullPath, fileData)) {
             return null;
         }
@@ -444,8 +446,9 @@ public class FileDetail extends ControllerBase {
             throws AtareSysException, IOException, ServletException {
         WebBean bean = getWebBean();
         
-        String tempPath = "C:\\kenshuProject\\WebContent\\upload\\temp";//一時保存先フォルダのパス設定
+        String tempPath = getServletContext().getRealPath("/upload/temp");//一時保存先フォルダのパス設定
         
+        System.out.println(tempPath);
      // ファイルデータを取得
         FileUtil fileUtil = new FileUtil();
         byte[] fileData = (byte[]) bean.object("file");
